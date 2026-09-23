@@ -1,0 +1,218 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esquiva los Bloques</title>
+</head>
+
+<body>
+
+<center>
+    <h1>🎮 ESQUIVA LOS BLOQUES</h1>
+
+    <canvas id="juego" width="500" height="600" 
+            style="border: 3px solid black; background-color: #111;">
+    </canvas>
+
+    <h2>Puntos: <span id="puntos">0</span></h2>
+
+    <p>
+        Usa las teclas ⬅️ ➡️ para moverte
+    </p>
+
+    <button onclick="reiniciar()">REINICIAR</button>
+</center>
+
+<script>
+
+const canvas = document.getElementById("juego");
+const ctx = canvas.getContext("2d");
+
+let jugador = {
+    x: 225,
+    y: 530,
+    ancho: 50,
+    alto: 50,
+    velocidad: 7
+};
+
+let enemigos = [];
+
+let puntos = 0;
+let juegoTerminado = false;
+
+let teclas = {};
+
+document.addEventListener("keydown", function(event) {
+    teclas[event.key] = true;
+});
+
+document.addEventListener("keyup", function(event) {
+    teclas[event.key] = false;
+});
+
+
+function crearEnemigo() {
+
+    let enemigo = {
+        x: Math.random() * (canvas.width - 40),
+        y: -40,
+        ancho: 40,
+        alto: 40,
+        velocidad: 3 + Math.random() * 3
+    };
+
+    enemigos.push(enemigo);
+}
+
+
+function moverJugador() {
+
+    if (teclas["ArrowLeft"] && jugador.x > 0) {
+        jugador.x -= jugador.velocidad;
+    }
+
+    if (teclas["ArrowRight"] && jugador.x < canvas.width - jugador.ancho) {
+        jugador.x += jugador.velocidad;
+    }
+}
+
+
+function moverEnemigos() {
+
+    for (let i = 0; i < enemigos.length; i++) {
+
+        enemigos[i].y += enemigos[i].velocidad;
+
+        if (enemigos[i].y > canvas.height) {
+            enemigos.splice(i, 1);
+            puntos++;
+            document.getElementById("puntos").textContent = puntos;
+            i--;
+        }
+    }
+}
+
+
+function detectarColision() {
+
+    for (let enemigo of enemigos) {
+
+        if (
+            jugador.x < enemigo.x + enemigo.ancho &&
+            jugador.x + jugador.ancho > enemigo.x &&
+            jugador.y < enemigo.y + enemigo.alto &&
+            jugador.y + jugador.alto > enemigo.y
+        ) {
+
+            juegoTerminado = true;
+        }
+    }
+}
+
+
+function dibujarJugador() {
+
+    ctx.fillStyle = "lime";
+    ctx.fillRect(
+        jugador.x,
+        jugador.y,
+        jugador.ancho,
+        jugador.alto
+    );
+}
+
+
+function dibujarEnemigos() {
+
+    ctx.fillStyle = "red";
+
+    for (let enemigo of enemigos) {
+
+        ctx.fillRect(
+            enemigo.x,
+            enemigo.y,
+            enemigo.ancho,
+            enemigo.alto
+        );
+    }
+}
+
+
+function dibujar() {
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    dibujarJugador();
+    dibujarEnemigos();
+
+    if (juegoTerminado) {
+
+        ctx.fillStyle = "white";
+        ctx.font = "40px Arial";
+        ctx.textAlign = "center";
+
+        ctx.fillText(
+            "GAME OVER",
+            canvas.width / 2,
+            canvas.height / 2
+        );
+
+        ctx.font = "20px Arial";
+
+        ctx.fillText(
+            "Presiona REINICIAR",
+            canvas.width / 2,
+            canvas.height / 2 + 40
+        );
+    }
+}
+
+
+function juego() {
+
+    if (!juegoTerminado) {
+
+        moverJugador();
+        moverEnemigos();
+        detectarColision();
+    }
+
+    dibujar();
+
+    requestAnimationFrame(juego);
+}
+
+
+function reiniciar() {
+
+    jugador.x = 225;
+
+    enemigos = [];
+
+    puntos = 0;
+
+    juegoTerminado = false;
+
+    document.getElementById("puntos").textContent = puntos;
+}
+
+
+setInterval(function() {
+
+    if (!juegoTerminado) {
+        crearEnemigo();
+    }
+
+}, 700);
+
+
+juego();
+
+</script>
+
+</body>
+</html>
+```
